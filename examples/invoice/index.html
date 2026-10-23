@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <title>Hoá đơn {{invoice.number}}</title>
+  <!-- External CSS: pdfsmith inlines this automatically -->
+  <link rel="stylesheet" href="./invoice.css">
+</head>
+<body>
+  {{> letterhead}}
+
+  <section class="title-row">
+    <div>
+      <h1>HOÁ ĐƠN</h1>
+      <p class="muted">Số: <strong>{{invoice.number}}</strong></p>
+    </div>
+    <div class="meta">
+      <p><span>Ngày phát hành</span><strong>{{date invoice.date "dmy"}}</strong></p>
+      <p><span>Hạn thanh toán</span><strong>{{date invoice.dueDate "dmy"}}</strong></p>
+      <p><span>Trạng thái</span><strong class="badge">{{invoice.status}}</strong></p>
+    </div>
+  </section>
+
+  <section class="parties">
+    <article>
+      <h2>Bên bán</h2>
+      <p class="name">{{seller.name}}</p>
+      <p class="muted">{{seller.address}}</p>
+      <p class="muted">MST: {{seller.taxId}}</p>
+      <p class="muted">{{seller.email}} · {{seller.phone}}</p>
+    </article>
+    <article>
+      <h2>Bên mua</h2>
+      <p class="name">{{customer.name}}</p>
+      <p class="muted">{{customer.address}}</p>
+      {{#customer.taxId}}<p class="muted">MST: {{customer.taxId}}</p>{{/customer.taxId}}
+      <p class="muted">{{customer.email}}</p>
+    </article>
+  </section>
+
+  <table class="items">
+    <thead>
+      <tr>
+        <th class="num">#</th>
+        <th>Mô tả</th>
+        <th class="center">SL</th>
+        <th class="right">Đơn giá</th>
+        <th class="right">Thành tiền</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#items}}
+      <tr>
+        <td class="num">{{pad @index 2}}</td>
+        <td>
+          <span class="item-name">{{name}}</span>
+          {{#note}}<span class="item-note">{{note}}</span>{{/note}}
+        </td>
+        <td class="center">{{quantity}}</td>
+        <td class="right">{{currency unitPrice "VND"}}</td>
+        <td class="right strong">{{currency (multiply quantity unitPrice) "VND"}}</td>
+      </tr>
+      {{/items}}
+    </tbody>
+  </table>
+
+  <section class="totals">
+    <div class="words">
+      <p class="label">Số tiền bằng chữ</p>
+      <p class="value">{{words totals.grand}}</p>
+    </div>
+    <table>
+      <tr><td>Tạm tính</td><td class="right">{{currency totals.subtotal "VND"}}</td></tr>
+      {{#totals.discount}}
+      <tr><td>Chiết khấu</td><td class="right">-{{currency totals.discount "VND"}}</td></tr>
+      {{/totals.discount}}
+      <tr><td>VAT ({{totals.vatRate}}%)</td><td class="right">{{currency totals.vat "VND"}}</td></tr>
+      <tr class="grand"><td>Tổng cộng</td><td class="right">{{currency totals.grand "VND"}}</td></tr>
+    </table>
+  </section>
+
+  <section class="payment">
+    <h2>Thông tin thanh toán</h2>
+    <div class="grid">
+      <p><span>Ngân hàng</span><strong>{{payment.bank}}</strong></p>
+      <p><span>Số tài khoản</span><strong>{{payment.account}}</strong></p>
+      <p><span>Chủ tài khoản</span><strong>{{payment.holder}}</strong></p>
+      <p><span>Nội dung</span><strong>{{payment.reference}}</strong></p>
+    </div>
+  </section>
+
+  {{#notes.length}}
+  <section class="notes">
+    <h2>Ghi chú</h2>
+    <ul>
+      {{#notes}}<li>{{.}}</li>{{/notes}}
+    </ul>
+  </section>
+  {{/notes.length}}
+
+  {{> signature}}
+</body>
+</html>

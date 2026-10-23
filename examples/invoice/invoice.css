@@ -1,0 +1,258 @@
+/* Invoice theme — deliberately "complex" so the example proves real CSS works:
+   custom properties, gradients, flex, grid, box-shadow, pseudo-elements,
+   tabular numerals, and print-only page rules. */
+
+:root {
+  --brand: #1d4ed8;
+  --brand-soft: #eff4ff;
+  --ink: #101828;
+  --muted: #667085;
+  --line: #e4e7ec;
+  --radius: 12px;
+}
+
+@page {
+  size: A4;
+  margin: 0;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  color: var(--ink);
+  font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
+  font-size: 9.5pt;
+  line-height: 1.45;
+  font-variant-numeric: tabular-nums;
+}
+
+body {
+  padding: 13mm 14mm 13mm;
+  background:
+    radial-gradient(900px 320px at 100% 0%, var(--brand-soft), transparent 70%),
+    #fff;
+}
+
+.muted { color: var(--muted); }
+.strong { font-weight: 600; }
+.right { text-align: right; }
+.center { text-align: center; }
+.num { width: 28px; color: var(--muted); }
+
+/* ------------------------------------------------------------ letterhead */
+
+.letterhead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--ink);
+}
+
+.brand { display: flex; align-items: center; gap: 10px; }
+
+.logo {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 10pt;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  background: linear-gradient(135deg, var(--brand), #7c3aed);
+  box-shadow: 0 6px 14px rgb(29 78 216 / 0.28);
+}
+
+.brand-name { margin: 0; font-size: 13pt; font-weight: 700; letter-spacing: -0.01em; }
+.brand-tag { margin: 0; font-size: 8.5pt; color: var(--muted); }
+.brand-meta { text-align: right; font-size: 8.5pt; color: var(--muted); }
+.brand-meta p { margin: 0; }
+
+/* ---------------------------------------------------------------- header */
+
+.title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin: 14px 0 12px;
+}
+
+.title-row h1 {
+  margin: 0;
+  font-size: 21pt;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--brand);
+}
+
+.meta { min-width: 210px; }
+.meta p {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  margin: 0 0 2px;
+  font-size: 8.5pt;
+}
+.meta span { color: var(--muted); }
+
+.badge {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 8pt;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #05603a;
+  background: #d1fadf;
+}
+
+/* --------------------------------------------------------------- parties */
+
+.parties {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.parties article {
+  padding: 9px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fcfcfd;
+}
+
+.parties h2 {
+  margin: 0 0 4px;
+  font-size: 7.5pt;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--muted);
+}
+
+.parties p { margin: 0 0 1px; font-size: 8.8pt; line-height: 1.4; }
+.parties .name { font-weight: 700; font-size: 9.8pt; }
+
+/* ----------------------------------------------------------------- items */
+
+.items {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-bottom: 12px;
+}
+
+.items th {
+  padding: 6px 9px;
+  font-size: 7.5pt;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #fff;
+  background: var(--ink);
+  text-align: left;
+}
+.items th:first-child { border-radius: 8px 0 0 0; }
+.items th:last-child { border-radius: 0 8px 0 0; text-align: right; }
+
+.items td {
+  padding: 7px 9px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+  font-size: 9pt;
+}
+
+.items tbody tr:nth-child(even) td { background: #fafbff; }
+.items tbody tr:last-child td:first-child { border-radius: 0 0 0 8px; }
+.items tbody tr:last-child td:last-child { border-radius: 0 0 8px 0; }
+
+.item-name { display: block; font-weight: 600; }
+.item-note { display: block; font-size: 8.5pt; color: var(--muted); }
+
+/* ---------------------------------------------------------------- totals */
+
+.totals {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 24px;
+  page-break-inside: avoid;
+}
+
+.words { flex: 1 1 45%; }
+.words .label {
+  margin: 0;
+  font-size: 8pt;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--muted);
+}
+.words .value { margin: 2px 0 0; font-style: italic; font-size: 9.5pt; }
+
+.totals table { min-width: 46%; border-collapse: collapse; font-size: 9pt; }
+.totals td { padding: 3px 0; }
+.totals td:first-child { color: var(--muted); padding-right: 24px; }
+
+.totals tr.grand td {
+  padding-top: 7px;
+  border-top: 2px solid var(--ink);
+  font-size: 11.5pt;
+  font-weight: 700;
+  color: var(--brand);
+}
+.totals tr.grand td:first-child { color: var(--ink); }
+
+/* --------------------------------------------------------------- payment */
+
+.payment {
+  margin-top: 12px;
+  padding: 9px 12px;
+  border-radius: var(--radius);
+  border: 1px solid var(--brand-soft);
+  background: var(--brand-soft);
+  break-inside: avoid;
+}
+
+.payment h2 {
+  margin: 0 0 5px;
+  font-size: 7.5pt;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--brand);
+}
+
+.payment .grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2px 24px;
+  font-size: 8.8pt;
+}
+.payment p { margin: 0; }
+.payment span { color: var(--muted); margin-right: 6px; }
+
+/* ----------------------------------------------------------------- notes */
+
+.notes { margin-top: 10px; font-size: 8.2pt; color: var(--muted); break-inside: avoid; }
+.notes h2 { font-size: 7.5pt; text-transform: uppercase; letter-spacing: 0.09em; margin: 0 0 3px; }
+.notes ul { margin: 0; padding-left: 14px; }
+
+/* ------------------------------------------------------------- signature */
+
+.signature {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  margin-top: 14px;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.sign-block { text-align: center; }
+.sign-label { margin: 0; font-weight: 700; font-size: 9pt; }
+.sign-hint { margin: 0; font-size: 7.5pt; color: var(--muted); font-style: italic; }
+.sign-space { height: 46px; }
+.sign-name { margin: 0; font-size: 9pt; }

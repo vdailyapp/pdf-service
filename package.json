@@ -1,0 +1,44 @@
+{
+  "name": "pdfsmith",
+  "version": "0.1.0",
+  "description": "Bun-native PDF engine: render complex HTML/CSS to PDF and fill templates — zero runtime dependencies, driven by real Chrome via CDP.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./src/index.ts",
+  "module": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./cli": "./src/cli.ts"
+  },
+  "bin": {
+    "pdfsmith": "./src/cli.ts"
+  },
+  "files": [
+    "src",
+    "README.md"
+  ],
+  "scripts": {
+    "cli": "bun run src/cli.ts",
+    "demo": "bun run examples/render.ts",
+    "test": "bun test",
+    "typecheck": "bunx tsc --noEmit"
+  },
+  "keywords": [
+    "pdf",
+    "bun",
+    "html-to-pdf",
+    "template",
+    "invoice",
+    "chrome",
+    "cdp",
+    "puppeteer-alternative"
+  ],
+  "engines": {
+    "bun": ">=1.1.0"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5.6.0"
+  }
+}

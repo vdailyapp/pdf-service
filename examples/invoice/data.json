@@ -1,0 +1,47 @@
+{
+  "seller": {
+    "brand": "Phạm Gia Solutions",
+    "tagline": "Thiết kế & phát triển sản phẩm số",
+    "name": "Công ty TNHH Phạm Gia Solutions",
+    "address": "Tầng 8, 18 Phạm Văn Đồng, Cầu Giấy, Hà Nội",
+    "taxId": "0109 876 543",
+    "email": "billing@phamgia.dev",
+    "phone": "+84 24 7300 1234",
+    "website": "phamgia.dev",
+    "contact": "Nguyễn Văn A"
+  },
+  "customer": {
+    "name": "Công ty CP Đầu tư Sao Việt",
+    "address": "126 Nguyễn Thị Minh Khai, Quận 3, TP. Hồ Chí Minh",
+    "taxId": "0312 345 678",
+    "email": "ketoan@saoviet.vn",
+    "contact": "Trần Thu Trang"
+  },
+  "invoice": {
+    "number": "HD-2026-0042",
+    "date": "2026-10-23",
+    "dueDate": "2026-11-06",
+    "status": "Đã phát hành"
+  },
+  "items": [
+    { "name": "Thiết kế hệ thống thiết kế (design system)", "note": "Tokens, component library, tài liệu bàn giao", "quantity": 1, "unitPrice": 48000000 },
+    { "name": "Phát triển dashboard quản trị", "note": "React + Node, 12 màn hình", "quantity": 12, "unitPrice": 3200000 },
+    { "name": "Tối ưu hiệu năng & bảo mật", "quantity": 6, "unitPrice": 2800000 },
+    { "name": "Hỗ trợ vận hành (tháng)", "note": "SLA 8h, giờ hành chính", "quantity": 3, "unitPrice": 4500000 }
+  ],
+  "totals": {
+    "discount": 3000000,
+    "vatRate": 10
+  },
+  "payment": {
+    "bank": "Vietcombank — CN Cầu Giấy",
+    "account": "0071 000 123 456",
+    "holder": "CONG TY TNHH PHAM GIA SOLUTIONS",
+    "reference": "HD-2026-0042"
+  },
+  "notes": [
+    "Vui lòng thanh toán trong vòng 14 ngày kể từ ngày phát hành.",
+    "Nội dung chuyển khoản ghi đúng số hoá đơn để đối chiếu tự động.",
+    "Hoá đơn điện tử có giá trị pháp lý theo Nghị định 123/2020/NĐ-CP."
+  ]
+}

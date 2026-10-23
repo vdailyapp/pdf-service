@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <title>{{title}}</title>
+  <link rel="stylesheet" href="./report.css">
+</head>
+<body>
+  <section class="cover">
+    <p class="eyebrow">Phòng Phân tích · Nội bộ</p>
+    <h1>{{title}}</h1>
+    <p class="subtitle">{{subtitle}}</p>
+    <div class="cover-meta">
+      <p><span>Tác giả</span><strong>{{author}}</strong></p>
+      <p><span>Ngày tạo</span><strong>{{date generatedAt "date"}}</strong></p>
+      <p><span>Kỳ báo cáo</span><strong>Quý 3 / 2026</strong></p>
+    </div>
+  </section>
+
+  <section class="highlights">
+    {{#highlights}}
+    <article>
+      <p class="label">{{label}}</p>
+      <p class="value">{{value}}</p>
+    </article>
+    {{/highlights}}
+  </section>
+
+  <section class="chart">
+    <h2>Doanh thu theo tháng</h2>
+    <div class="bars">
+      {{#series}}
+      <div class="bar-col">
+        <div class="bar-value">{{display}}</div>
+        <div class="bar-track">
+          <div class="bar" style="height: {{height}}%"></div>
+        </div>
+        <div class="bar-label">{{label}}</div>
+        {{#delta}}<div class="bar-delta {{#gt delta 0}}up{{/gt}}">{{delta}}%</div>{{/delta}}
+      </div>
+      {{/series}}
+    </div>
+    <p class="caption">Đơn vị: VND. Cao nhất: {{currency peak "VND"}}.</p>
+  </section>
+
+  <section class="table-section">
+    <h2>Chi tiết 3 tháng gần nhất</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Tháng</th>
+          <th class="right">Doanh thu</th>
+          <th class="right">Đơn hàng</th>
+          <th class="right">Tỷ lệ hoàn</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#table}}
+        <tr>
+          <td>{{month}}</td>
+          <td class="right">{{currency revenue "VND"}}</td>
+          <td class="right">{{number orders 0}}</td>
+          <td class="right">{{number refundRate 2}}%</td>
+        </tr>
+        {{/table}}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="callout">
+    <h2>Nhận định</h2>
+    <p>
+      Đà tăng trưởng duy trì ba tháng liên tiếp nhờ nhóm khách hàng doanh nghiệp vừa.
+      Tỷ lệ hoàn hàng tăng nhẹ trong tháng 10 cần theo dõi ở nhóm SKU điện tử.
+    </p>
+  </section>
+</body>
+</html>

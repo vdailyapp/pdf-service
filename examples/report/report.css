@@ -1,0 +1,192 @@
+/* Report theme: no external assets, so the file is fully self-contained.
+   Charts are CSS-only — bars sized by inline height percentages. */
+
+:root {
+  --ink: #0f172a;
+  --muted: #64748b;
+  --accent: #0ea5e9;
+  --accent-2: #6366f1;
+  --line: #e2e8f0;
+}
+
+@page { size: A4; margin: 0; }
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 16mm 16mm 22mm;
+  font-family: "Helvetica Neue", Arial, sans-serif;
+  font-size: 10pt;
+  line-height: 1.6;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  background: #fff;
+}
+
+h1, h2 { letter-spacing: -0.015em; }
+
+.right { text-align: right; }
+
+/* ------------------------------------------------------------------ cover */
+
+.cover {
+  padding: 14mm 0 10mm;
+  border-bottom: 3px solid var(--ink);
+  margin-bottom: 10mm;
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  font-size: 8pt;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--accent);
+}
+
+.cover h1 {
+  margin: 0 0 6px;
+  font-size: 30pt;
+  line-height: 1.1;
+}
+
+.subtitle { margin: 0 0 18px; font-size: 11.5pt; color: var(--muted); }
+
+.cover-meta {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+.cover-meta p { margin: 0; font-size: 9pt; }
+.cover-meta span {
+  display: block;
+  font-size: 7.5pt;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+/* ------------------------------------------------------------- highlights */
+
+.highlights {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 12mm;
+  break-inside: avoid;
+}
+
+.highlights article {
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: linear-gradient(160deg, #f8fafc, #eef2ff);
+  border: 1px solid var(--line);
+}
+
+.highlights .label {
+  margin: 0 0 4px;
+  font-size: 7.5pt;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+.highlights .value { margin: 0; font-size: 15pt; font-weight: 700; color: var(--accent-2); }
+
+/* ------------------------------------------------------------------ chart */
+
+.chart { margin-bottom: 12mm; break-inside: avoid; }
+.chart h2, .table-section h2, .callout h2 {
+  margin: 0 0 10px;
+  font-size: 12pt;
+}
+
+.bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  height: 170px;
+  padding: 10px 14px 0;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: repeating-linear-gradient(
+    to top,
+    #f8fafc 0,
+    #f8fafc 1px,
+    transparent 1px,
+    transparent 42px
+  );
+}
+
+.bar-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  height: 100%;
+  text-align: center;
+}
+
+.bar-value { font-size: 7pt; color: var(--muted); margin-bottom: 3px; }
+
+.bar-track {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.bar {
+  width: 70%;
+  min-height: 4px;
+  border-radius: 6px 6px 2px 2px;
+  background: linear-gradient(180deg, var(--accent), var(--accent-2));
+  box-shadow: 0 4px 10px rgb(99 102 241 / 0.22);
+}
+
+.bar-label { margin-top: 6px; font-size: 7.5pt; color: var(--ink); }
+.bar-delta { font-size: 7pt; color: var(--muted); }
+.bar-delta.up { color: #16a34a; }
+
+.caption { margin: 8px 0 0; font-size: 8pt; color: var(--muted); }
+
+/* ------------------------------------------------------------------ table */
+
+.table-section { margin-bottom: 10mm; break-inside: avoid; }
+
+.table-section table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 9.5pt;
+}
+
+.table-section th {
+  padding: 7px 8px;
+  text-align: left;
+  font-size: 7.5pt;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--muted);
+  border-bottom: 2px solid var(--ink);
+}
+
+.table-section td {
+  padding: 7px 8px;
+  border-bottom: 1px solid var(--line);
+}
+
+.table-section tbody tr:nth-child(even) td { background: #f8fafc; }
+
+/* ---------------------------------------------------------------- callout */
+
+.callout {
+  padding: 12px 16px;
+  border-left: 4px solid var(--accent);
+  border-radius: 0 10px 10px 0;
+  background: #f0f9ff;
+  break-inside: avoid;
+}
+
+.callout h2 { margin-bottom: 6px; font-size: 10pt; }
+.callout p { margin: 0; font-size: 9.5pt; color: #0c4a6e; }
