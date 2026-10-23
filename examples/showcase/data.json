@@ -1,0 +1,96 @@
+{
+  "meta": {
+    "title": "pdfsmith — tài liệu mẫu",
+    "eyebrow": "Bun · HTML/CSS → PDF · Templates",
+    "lede": "Một tài liệu minh hoạ được render bằng chính thư viện này: bìa, bảng số liệu, biểu đồ CSS thuần, code block và chân trang có số trang.",
+    "version": "0.1.0",
+    "date": "2026-10-23",
+    "author": "Javis cho Nguyen",
+    "env": "Bun 1.4.4 · Chrome 155 · macOS arm64",
+    "note": "Trang bìa dùng gradient nhiều lớp và pseudo-element trang trí; các trang trong dùng grid, bảng có dòng tổng, và donut chart dựng bằng conic-gradient.",
+    "closing": "Nếu bạn cần thêm kiểu tài liệu nào — hợp đồng, phiếu lương, báo cáo Redmine — template chỉ là HTML/CSS, không phải DSL phải học.",
+    "chips": [
+      "Không dependency runtime",
+      "Blink làm layout",
+      "Template Mustache",
+      "CLI + API",
+      "Xuất 1 trang = 1 trang"
+    ]
+  },
+  "features": [
+    {
+      "title": "CSS thật, không mô phỏng",
+      "body": "Grid, flex, gradient, pseudo-element, web font, SVG — tất cả do Chrome dựng nên kết quả đúng như bạn thấy trong DevTools.",
+      "tag": "Layout"
+    },
+    {
+      "title": "Chờ đúng thứ cần chờ",
+      "body": "Pipeline luôn đợi font và ảnh xong trước khi in, nên không còn PDF trắng trang hay chữ bị thay font.",
+      "tag": "Ổn định"
+    },
+    {
+      "title": "Template có helper",
+      "body": "Mustache cộng helper lồng nhau và partials. Số tiền, ngày tháng, số thành chữ đều có sẵn.",
+      "tag": "Template"
+    },
+    {
+      "title": "Không eval",
+      "body": "Template không chạy được code. Lookup chỉ đọc own property, nên không chạm tới prototype.",
+      "tag": "An toàn"
+    },
+    {
+      "title": "Một browser cho cả lô",
+      "body": "Khởi động Chrome tốn ~400ms, in tốn ~80ms. Batch 100 hoá đơn dùng chung một tiến trình.",
+      "tag": "Hiệu năng"
+    },
+    {
+      "title": "Đo được, không đoán",
+      "body": "Script measure in ra box thật trong print media, chỉ đúng phần tử nào tràn trang để sửa CSS.",
+      "tag": "Chẩn đoán"
+    }
+  ],
+  "swatches": [
+    { "name": "Ink", "hex": "#0b1220" },
+    { "name": "Accent", "hex": "#4338ca" },
+    { "name": "Accent 2", "hex": "#0ea5e9" },
+    { "name": "Accent 3", "hex": "#f59e0b" },
+    { "name": "Success", "hex": "#047857" },
+    { "name": "Border", "hex": "#e2e8f0" }
+  ],
+  "kpis": [],
+  "refundRate": 1.2,
+  "ordersCount": 1383,
+  "ordersCaption": "Sáu hoá đơn giá trị lớn nhất trong kỳ",
+  "checks": [
+    "60/60 test pass, gồm round-trip với Chrome thật — không mock",
+    "Landscape đo bằng MediaBox: 842 × 596 pt, đúng chiều ngang",
+    "CSS tương đối inline đúng theo thư mục template, không theo cwd",
+    "{{constructor}} không chạm prototype, trả về rỗng",
+    "Helper lồng ba cấp parse được: upper (trim (lower x))",
+    "Hoá đơn mẫu và báo cáo mẫu đều đúng 1 trang A4",
+    "tsc --noEmit sạch, không có any ngầm"
+  ],
+  "limits": [
+    "Không phải PDF editor: không merge, split, ký số hay điền form",
+    "Không hợp serverless cold start — khởi động Chrome ~400ms",
+    "countPages đọc page object chưa nén; PDF dùng object stream trả 0",
+    "Font phải có sẵn: dùng web font trong template hoặc cài vào hệ thống"
+  ],
+  "bars": [
+    { "label": "T5", "short": "128", "pct": 68 },
+    { "label": "T6", "short": "142", "pct": 75 },
+    { "label": "T7", "short": "137", "pct": 73 },
+    { "label": "T8", "short": "159", "pct": 84 },
+    { "label": "T9", "short": "172", "pct": 91 },
+    { "label": "T10", "short": "189", "pct": 100 }
+  ],
+  "peakShort": "189 triệu",
+  "donut": [
+    { "label": "Thiết kế", "pct": 34, "color": "#4338ca" },
+    { "label": "Phát triển", "pct": 41, "color": "#0ea5e9" },
+    { "label": "Bảo trì", "pct": 16, "color": "#f59e0b" },
+    { "label": "Khác", "pct": 9, "color": "#cbd5e1" }
+  ],
+  "donutGradient": "conic-gradient(#4338ca 0% 34%, #0ea5e9 34% 75%, #f59e0b 75% 91%, #cbd5e1 91% 100%)",
+  "donutTotal": ""
+}

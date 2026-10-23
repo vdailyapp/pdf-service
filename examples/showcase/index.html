@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <title>{{meta.title}}</title>
+  <link rel="stylesheet" href="./showcase.css">
+</head>
+<body>
+
+<!-- ============================ 1. COVER ============================ -->
+<section class="cover-wrap">
+  <div class="cover">
+    <header class="cover-top">
+      <div class="mark">
+        <span class="mark-badge">PS</span>
+        <span class="mark-text">pdfsmith</span>
+      </div>
+      <span class="mark-version">v{{meta.version}}</span>
+    </header>
+
+    <div class="cover-body">
+      <p class="eyebrow">{{meta.eyebrow}}</p>
+      <h1>{{meta.title}}</h1>
+      <p class="lede">{{meta.lede}}</p>
+
+      <ul class="chips">
+        {{#meta.chips}}<li>{{.}}</li>{{/meta.chips}}
+      </ul>
+    </div>
+
+    <footer class="cover-foot">
+      <div class="cover-meta">
+        <p><span>Ngày tạo</span><strong>{{date meta.date "dmy"}}</strong></p>
+        <p><span>Người chuẩn bị</span><strong>{{meta.author}}</strong></p>
+        <p><span>Môi trường</span><strong>{{meta.env}}</strong></p>
+      </div>
+      <p class="cover-note">{{meta.note}}</p>
+    </footer>
+  </div>
+</section>
+
+<!-- ========================== 2. CAPABILITIES ======================= -->
+<section class="page">
+  <header class="page-head">
+    <div>
+      <p class="kicker">01 · Năng lực</p>
+      <h2>Render bằng Blink, không mô phỏng CSS</h2>
+    </div>
+    <p class="page-head-note">
+      Toàn bộ layout do Chrome thực hiện qua DevTools Protocol. Thư viện chỉ lo phần vận hành:
+      chờ font, chờ ảnh, phân trang, header/footer.
+    </p>
+  </header>
+
+  <div class="cards">
+    {{#features}}
+    <article class="card">
+      <p class="card-idx">{{pad @index 2}}</p>
+      <h3>{{title}}</h3>
+      <p class="card-body">{{body}}</p>
+      <p class="card-tag">{{tag}}</p>
+    </article>
+    {{/features}}
+  </div>
+
+  <div class="split">
+    <section class="panel">
+      <h3 class="panel-title">Thang chữ</h3>
+      <div class="specimen">
+        <div class="spec-row"><span class="spec-key">Display</span><span class="spec-display">Aa</span></div>
+        <div class="spec-row"><span class="spec-key">H1 · 24pt</span><span class="spec-h1">Báo cáo</span></div>
+        <div class="spec-row"><span class="spec-key">H2 · 15pt</span><span class="spec-h2">Phân tích</span></div>
+        <div class="spec-row"><span class="spec-key">Body · 9.5pt</span><span class="spec-body">Nội dung văn bản với số liệu 1.234.567</span></div>
+        <div class="spec-row"><span class="spec-key">Mono · 8pt</span><span class="spec-mono">HD-2026-0042</span></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h3 class="panel-title">Design tokens</h3>
+      <p class="panel-note">Một stylesheet, nhiều thương hiệu — token truyền vào thành CSS variable.</p>
+      <ul class="swatches">
+        {{#swatches}}
+        <li>
+          <span class="swatch" style="background: {{hex}}"></span>
+          <span class="swatch-name">{{name}}</span>
+          <span class="swatch-hex">{{hex}}</span>
+        </li>
+        {{/swatches}}
+      </ul>
+    </section>
+  </div>
+
+  <p class="footnote">
+    Chữ tiếng Việt có dấu, ký tự đặc biệt và số căn cột (tabular numerals) đều giữ đúng
+    baseline sau khi nhúng font vào PDF.
+  </p>
+</section>
+
+<!-- ============================ 3. DATA ============================= -->
+<section class="page">
+  <header class="page-head">
+    <div>
+      <p class="kicker">02 · Dữ liệu</p>
+      <h2>Bảng, biểu đồ và số liệu tính trong code</h2>
+    </div>
+    <p class="page-head-note">
+      Template chỉ định dạng. Phép tính nằm trong TypeScript để test được và cho kết quả
+      giống nhau mọi lần chạy.
+    </p>
+  </header>
+
+  <div class="kpis">
+    {{#kpis}}
+    <article class="kpi">
+      <p class="kpi-label">{{label}}</p>
+      <p class="kpi-value">{{value}}</p>
+      <p class="kpi-delta {{#up}}up{{/up}}">{{delta}}</p>
+    </article>
+    {{/kpis}}
+  </div>
+
+  <div class="viz">
+    <section class="panel viz-bars">
+      <h3 class="panel-title">Doanh thu theo tháng</h3>
+      <div class="bars">
+        {{#bars}}
+        <div class="bar-col">
+          <span class="bar-num">{{short}}</span>
+          <div class="bar-track"><div class="bar" style="height: {{pct}}%"></div></div>
+          <span class="bar-label">{{label}}</span>
+        </div>
+        {{/bars}}
+      </div>
+      <p class="panel-note">Đơn vị: triệu đồng. Cột cao nhất = {{peakShort}}.</p>
+    </section>
+
+    <section class="panel viz-donut">
+      <h3 class="panel-title">Cơ cấu doanh thu</h3>
+      <div class="donut-wrap">
+        <div class="donut" style="background: {{donutGradient}}">
+          <div class="donut-hole">
+            <span class="donut-value">{{donutTotal}}</span>
+            <span class="donut-cap">tổng</span>
+          </div>
+        </div>
+      </div>
+      <ul class="legend">
+        {{#donut}}
+        <li><span class="dot" style="background: {{color}}"></span>{{label}}<b>{{pct}}%</b></li>
+        {{/donut}}
+      </ul>
+    </section>
+  </div>
+
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Mã đơn</th>
+        <th>Khách hàng</th>
+        <th>Ngày</th>
+        <th class="right">Giá trị</th>
+        <th class="right">VAT</th>
+        <th class="right">Tổng</th>
+        <th class="center">Trạng thái</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#orders}}
+      <tr>
+        <td class="mono">{{code}}</td>
+        <td>{{customer}}</td>
+        <td>{{date day "dmy"}}</td>
+        <td class="right">{{currency value "VND"}}</td>
+        <td class="right">{{currency vat "VND"}}</td>
+        <td class="right strong">{{currency total "VND"}}</td>
+        <td class="center"><span class="pill {{statusClass}}">{{status}}</span></td>
+      </tr>
+      {{/orders}}
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="3">Tổng {{orders.length}} đơn trong bảng</td>
+        <td class="right">{{currency sumValue "VND"}}</td>
+        <td class="right">{{currency sumVat "VND"}}</td>
+        <td class="right strong">{{currency sumTotal "VND"}}</td>
+        <td></td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <p class="footnote">
+    {{ordersCaption}} — tổng {{orders.length}} dòng. Dòng tổng cộng được cộng bằng hàm
+    <span class="mono">sum</span> trên mảng dữ liệu gốc, không cộng lại các chuỗi đã
+    định dạng — nên không có sai số làm tròn.
+  </p>
+</section>
+
+<!-- ========================== 4. TEMPLATE =========================== -->
+<section class="page page-last">
+  <header class="page-head">
+    <div>
+      <p class="kicker">03 · Sử dụng</p>
+      <h2>Template, helper và CLI</h2>
+    </div>
+    <p class="page-head-note">
+      Cú pháp Mustache, cộng helper lồng nhau. Không <span class="mono">eval</span>,
+      không truy cập prototype.
+    </p>
+  </header>
+
+  <div class="split split-code">
+    <section class="panel">
+      <h3 class="panel-title">Template</h3>
+      <pre class="code"><code>{{itemsBlock}}</code></pre>
+    </section>
+
+    <section class="panel">
+      <h3 class="panel-title">Gọi từ Bun</h3>
+      <pre class="code"><code>const invoice =
+  await loadTemplate("./templates/invoice");
+
+const { bytes, pageCount } =
+  await invoice.toPdf(data);
+
+await Bun.write("out.pdf", bytes);</code></pre>
+    </section>
+  </div>
+
+  <section class="panel panel-cli">
+    <h3 class="panel-title">CLI</h3>
+    <pre class="code"><code>pdfsmith fill templates/invoice -d data.json -o out.pdf
+pdfsmith render page.html -o page.pdf --format A4 --landscape
+pdfsmith doctor</code></pre>
+  </section>
+
+  <div class="split split-quiet">
+    <section class="panel">
+      <h3 class="panel-title">Đã kiểm chứng</h3>
+      <ul class="checks">
+        {{#checks}}<li>{{.}}</li>{{/checks}}
+      </ul>
+    </section>
+
+    <section class="panel">
+      <h3 class="panel-title">Giới hạn có chủ đích</h3>
+      <ul class="limits">
+        {{#limits}}<li>{{.}}</li>{{/limits}}
+      </ul>
+    </section>
+  </div>
+
+  <footer class="closing">
+    <p class="closing-line">{{meta.closing}}</p>
+    <p class="closing-meta">{{meta.author}} · {{date meta.date "dmy"}} · pdfsmith v{{meta.version}}</p>
+  </footer>
+</section>
+
+</body>
+</html>
