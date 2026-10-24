@@ -13,7 +13,7 @@
     <header class="cover-top">
       <div class="mark">
         <span class="mark-badge">PS</span>
-        <span class="mark-text">pdfsmith</span>
+        <span class="mark-text">pdf-service</span>
       </div>
       <span class="mark-version">v{{meta.version}}</span>
     </header>
@@ -228,9 +228,9 @@ await Bun.write("out.pdf", bytes);</code></pre>
 
   <section class="panel panel-cli">
     <h3 class="panel-title">CLI</h3>
-    <pre class="code"><code>pdfsmith fill templates/invoice -d data.json -o out.pdf
-pdfsmith render page.html -o page.pdf --format A4 --landscape
-pdfsmith doctor</code></pre>
+    <pre class="code"><code>pdf-service fill templates/invoice -d data.json -o out.pdf
+pdf-service render page.html -o page.pdf --format A4 --landscape
+pdf-service doctor</code></pre>
   </section>
 
   <div class="split split-quiet">
@@ -251,7 +251,7 @@ pdfsmith doctor</code></pre>
 
   <footer class="closing">
     <p class="closing-line">{{meta.closing}}</p>
-    <p class="closing-meta">{{meta.author}} · {{date meta.date "dmy"}} · pdfsmith v{{meta.version}}</p>
+    <p class="closing-meta">{{meta.author}} · {{date meta.date "dmy"}} · pdf-service v{{meta.version}}</p>
   </footer>
 </section>
 

@@ -5,3 +5,4 @@ examples/outputs/
 .DS_Store
 bun.lockb
 *.tsbuildinfo
+.env

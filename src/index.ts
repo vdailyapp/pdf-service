@@ -1,5 +1,5 @@
 /**
- * pdfsmith — Bun-native PDF generation.
+ * pdf-service — Bun-native PDF generation.
  *
  * Two jobs, one engine:
  *   1. Render complex HTML/CSS to PDF (Chrome does the layout, so nothing is

@@ -1,14 +1,20 @@
-# pdfsmith
+# pdf-service
 
-**Bun-native PDF engine.** Two jobs, one pipeline:
+**Bun-native PDF engine — as an HTTP service, a library, or a CLI.** Two jobs, one pipeline:
 
 1. **Render complex HTML/CSS to PDF** — Chrome does the layout, so flexbox, grid, `@page`, web fonts, SVG, gradients, `break-inside` and every other thing you have ever fought a PDF library over simply work.
 2. **Fill templates with data and print them** — an HTML template language with partials, layouts, nested helpers, and invoice-grade formatting (VND currency, Vietnamese number-to-words, dates).
 
 Zero runtime dependencies. Uses the Chrome already on your machine through the DevTools Protocol, on Bun's built-in `WebSocket`.
 
+```bash
+docker build -t pdf-service . && docker run -p 3000:3000 pdf-service
+curl -X POST localhost:3000/api/v1/pdf/render -H 'Content-Type: application/json' \
+  -d '{"html":"<h1>Xin chào</h1>"}' -o hello.pdf
+```
+
 ```ts
-import { loadTemplate } from "pdfsmith";
+import { loadTemplate } from "pdf-service";
 
 const invoice = await loadTemplate("./templates/invoice");
 const { bytes, pageCount } = await invoice.toPdf(data);
@@ -20,21 +26,21 @@ await Bun.write("invoice.pdf", bytes);
 ## Install
 
 ```bash
-bun add pdfsmith
+bun add github:vdailyapp/pdf-service
 ```
 
 Requires **Bun ≥ 1.1** and a Chrome/Chromium binary. Nothing else — no `puppeteer`, no `playwright`, no headless-shell download.
 
 Discovery order:
 
-1. `PDFSMITH_CHROME_PATH` environment variable
+1. `CHROME_PATH` environment variable
 2. Google Chrome, Chromium, Microsoft Edge (macOS / Linux / Windows default locations)
 
 If you only have a CI image without a browser:
 
 ```bash
 bunx playwright install chromium
-export PDFSMITH_CHROME_PATH=$(bunx playwright install --dry-run chromium | grep -o '/[^ ]*chrome')
+export CHROME_PATH=$(bunx playwright install --dry-run chromium | grep -o '/[^ ]*chrome')
 ```
 
 Check everything before you debug your template:
@@ -57,7 +63,7 @@ bun run src/cli.ts doctor
 ### Render HTML
 
 ```ts
-import { renderHtmlToPdf } from "pdfsmith";
+import { renderHtmlToPdf } from "pdf-service";
 
 const { bytes, pageCount, timings } = await renderHtmlToPdf(
   `<h1 style="font-family:Georgia">Xin chào</h1><p>Nội dung</p>`,
@@ -77,7 +83,7 @@ const { bytes, pageCount, timings } = await renderHtmlToPdf(
 Launching Chrome costs ~400 ms; printing costs ~80 ms. For batches, launch once:
 
 ```ts
-import { launchBrowser, loadTemplate } from "pdfsmith";
+import { launchBrowser, loadTemplate } from "pdf-service";
 
 const browser = await launchBrowser();
 try {
@@ -107,6 +113,68 @@ const invoice = await loadTemplate("./templates/invoice");
 ```
 
 Partials are auto-loaded from `*.partial.html`; `layout.html` is applied if present. Relative `href`/`src` in the template resolve **against the template's own directory**, not the process cwd — so the same template works from a script, a CLI call, or a server.
+
+---
+
+## HTTP service
+
+`src/server.ts` wraps the library in a small Bun server. One Chrome is launched at startup and shared; each request gets its own tab, and Chrome is relaunched if it dies.
+
+```bash
+bun run start          # or: bun run dev (watch mode)
+docker build -t pdf-service . && docker run -p 3000:3000 pdf-service
+```
+
+The image is Debian Chromium plus Noto/DejaVu fonts (Vietnamese covered) and runs as the non-root `bun` user.
+
+| Method | Path (under `API_PREFIX`, default `/api/v1/pdf`) | Body | Returns |
+|---|---|---|---|
+| `POST` | `/render` | `{ html, options?, filename? }` | `application/pdf` |
+| `POST` | `/fill` | `{ template, partials?, layout?, data?, tokens?, options?, filename? }` | `application/pdf` |
+| `POST` | `/templates/:name/render` | `{ data?, tokens?, options?, filename? }` | `application/pdf` |
+| `GET` | `/templates` | — | names under `TEMPLATES_DIR` |
+| `GET` | `/health/live`, `/health/ready` | — | liveness; readiness checks Chrome |
+
+`options` are the [render options](#render-options) a client may set (paper, margins, header/footer, watermark, css, waits…); browser, launch, asset inlining and request guards stay server-side. PDF responses carry `X-Page-Count` and `X-Render-Ms`. Errors use one JSON envelope:
+
+```json
+{ "success": false, "statusCode": 400, "code": "VALIDATION_FAILED", "message": "Invalid request",
+  "errors": [{ "field": "html", "message": "must be a non-empty string" }],
+  "path": "/api/v1/pdf/render", "timestamp": "…", "correlationId": "…" }
+```
+
+Codes: `VALIDATION_FAILED`, `PDF_UNAUTHORIZED`, `PDF_TEMPLATE_NOT_FOUND`, `PDF_TEMPLATE_INVALID` (422), `PDF_RENDER_TIMEOUT` (504), `PDF_RENDER_FAILED`, `PDF_BROWSER_UNAVAILABLE` (503).
+
+```bash
+curl -X POST localhost:3000/api/v1/pdf/templates/invoice/render \
+  -H 'Content-Type: application/json' -d @payload.json -o invoice.pdf
+```
+
+### Security model
+
+HTML in the request body (`/render`, `/fill`) is **untrusted**:
+
+- no local asset inlining — `<img src="/etc/passwd">` stays a broken image;
+- page scripts are off (a CSP placed before any caller markup), and so is `waitForFunction`;
+- every request the page makes is intercepted: only `data:` URLs and `PDF_ALLOWED_ORIGINS` pass, everything else (`file://`, internal hosts, cloud metadata) is blocked.
+
+Templates under `TEMPLATES_DIR` are trusted: their CSS/images/fonts are inlined from the template directory and scripts may run. Keep the service on an internal network, or set `PDF_SERVICE_TOKEN`.
+
+### Configuration
+
+| Env | Default | |
+|---|---|---|
+| `PORT` | `3000` | |
+| `API_PREFIX` | `/api/v1/pdf` | |
+| `TEMPLATES_DIR` | `./templates` | `<name>/index.html` (+ `*.css`, `*.partial.html`, `layout.html`) |
+| `PDF_SERVICE_TOKEN` | — | Bearer token for every non-health route |
+| `PDF_ALLOWED_ORIGINS` | — | Comma-separated, e.g. `https://fonts.googleapis.com,https://fonts.gstatic.com` |
+| `PDF_ALLOW_SCRIPTS` | `false` | Allow scripts in request HTML |
+| `PDF_CONCURRENCY` | `4` | Tabs rendering at once; the rest queue |
+| `PDF_MAX_BODY_MB` | `10` | |
+| `PDF_TIMEOUT_MS` | `30000` | Upper bound; clients may ask for less |
+| `CHROME_PATH` | auto | Browser binary |
+| `CHROME_NO_SANDBOX` | — | `1` inside containers (set in the image) |
 
 ---
 
@@ -158,7 +226,7 @@ Mustache-compatible, plus helpers and nested expressions.
 Add your own:
 
 ```ts
-import { PdfTemplate } from "pdfsmith";
+import { PdfTemplate } from "pdf-service";
 
 const template = new PdfTemplate({ html: "{{shout name}}" })
   .helper("shout", (value) => `${String(value).toUpperCase()}!`);
@@ -214,18 +282,18 @@ The pipeline always waits for `document.fonts.ready` and every `<img>` before pr
 
 ```bash
 # Render HTML
-pdfsmith render invoice.html -o invoice.pdf --format A4 --margin 12mm
+pdf-service render invoice.html -o invoice.pdf --format A4 --margin 12mm
 
 # Fill a template directory with JSON
-pdfsmith fill templates/invoice -d data.json -o out/invoice.pdf \
+pdf-service fill templates/invoice -d data.json -o out/invoice.pdf \
   --footer '<div style="font-size:8px;width:100%;text-align:center">Trang <span class="pageNumber"></span>/<span class="totalPages"></span></div>'
 
 # JSON from a pipe, HTML from stdin
-cat payload.json | pdfsmith fill templates/invoice -d - -o out.pdf
-echo '<h1>Hi</h1>' | pdfsmith render - -o hi.pdf --landscape
+cat payload.json | pdf-service fill templates/invoice -d - -o out.pdf
+echo '<h1>Hi</h1>' | pdf-service render - -o hi.pdf --landscape
 
 # Environment check
-pdfsmith doctor
+pdf-service doctor
 ```
 
 Run it without installing:
@@ -275,12 +343,13 @@ src/
 ├── template/document.ts  # PdfTemplate: template + data + print
 ├── template/helpers.ts   # currency/date/words/slug formatting
 ├── assets/inline.ts      # data-URI inlining for local CSS, images, fonts
-└── cli.ts                # render | fill | doctor
+├── cli.ts                # render | fill | doctor
+└── server.ts             # HTTP service
 examples/
 ├── invoice/              # Vietnamese invoice: gradients, grid, signature block
 └── report/               # dashboard report: CSS-only bar chart, page headers
 scripts/measure.ts        # layout diagnostics
-test/                     # 60 tests, including real Chrome round-trips
+test/                     # unit + real Chrome round-trips + HTTP service
 ```
 
 ---
@@ -311,7 +380,7 @@ test/                     # 60 tests, including real Chrome round-trips
 ## Scripts
 
 ```bash
-bun test              # 60 tests (engine + real Chrome round-trips)
+bun test              # engine, real Chrome round-trips, HTTP service
 bun run examples/render.ts   # builds the two sample PDFs
 bunx tsc --noEmit     # typecheck
 bun run src/cli.ts doctor
@@ -319,4 +388,4 @@ bun run src/cli.ts doctor
 
 ---
 
-MIT © Nguyen
+MIT © Phạm Văn Nguyên

@@ -62,7 +62,7 @@ async function readVersion(path: string): Promise<string> {
 
 /** Extend discovery with extra locations (e.g. a playwright/puppeteer cache). */
 export async function findBrowser(extraPaths: string[] = []): Promise<ResolvedBrowser | null> {
-  const envOverride = process.env.PDFSMITH_CHROME_PATH;
+  const envOverride = process.env.CHROME_PATH;
   const all: Array<{ flavor: BrowserFlavor; path: string }> = [
     ...(envOverride ? [{ flavor: "chrome" as BrowserFlavor, path: envOverride }] : []),
     ...CANDIDATES.flatMap(({ flavor, paths }) => paths.map((path) => ({ flavor, path }))),
@@ -93,6 +93,8 @@ export type LaunchOptions = {
   /** Show a real window instead of headless. */
   headless?: boolean;
   args?: string[];
+  /** Extra Chrome features to disable, merged into the single `--disable-features` flag. */
+  disableFeatures?: string[];
   /** Hard timeout for browser startup. */
   timeoutMs?: number;
   /** Directory for the temporary browser profile. */
@@ -119,7 +121,7 @@ export async function launchBrowser(options: LaunchOptions = {}): Promise<Browse
     throw new Error(
       [
         "No Chrome/Chromium binary found.",
-        "Install Google Chrome, or set PDFSMITH_CHROME_PATH=/path/to/chrome.",
+        "Install Google Chrome, or set CHROME_PATH=/path/to/chrome.",
         "On CI: `bunx playwright install chromium` and pass its path as executablePath.",
       ].join("\n"),
     );
@@ -128,7 +130,7 @@ export async function launchBrowser(options: LaunchOptions = {}): Promise<Browse
   const port = freePort();
   const headless = options.headless !== false;
   const userDataDir =
-    options.userDataDir ?? `${process.env.TMPDIR ?? "/tmp"}/pdfsmith-${process.pid}-${Date.now()}`;
+    options.userDataDir ?? `${process.env.TMPDIR ?? "/tmp"}/pdf-service-${process.pid}-${Date.now()}`;
 
   const args = [
     `--remote-debugging-port=${port}`,
@@ -139,7 +141,7 @@ export async function launchBrowser(options: LaunchOptions = {}): Promise<Browse
     "--disable-background-timer-throttling",
     "--disable-backgrounding-occluded-windows",
     "--disable-renderer-backgrounding",
-    "--disable-features=Translate,MediaRouter,OptimizationHints",
+    `--disable-features=${["Translate", "MediaRouter", "OptimizationHints", ...(options.disableFeatures ?? [])].join(",")}`,
     "--disable-sync",
     "--disable-extensions",
     "--metrics-recording-only",
@@ -148,6 +150,11 @@ export async function launchBrowser(options: LaunchOptions = {}): Promise<Browse
     "--font-render-hinting=none",
     "--allow-file-access-from-files",
     "--disable-gpu",
+    // Docker's /dev/shm is 64 MB by default; large pages crash the tab without this.
+    ...(process.platform === "linux" ? ["--disable-dev-shm-usage"] : []),
+    // Chrome refuses to start as root with its sandbox on, and most containers block the user
+    // namespaces the sandbox needs as non-root too (CHROME_NO_SANDBOX=1).
+    ...(process.getuid?.() === 0 || process.env.CHROME_NO_SANDBOX === "1" ? ["--no-sandbox"] : []),
     ...(headless ? ["--headless=new"] : []),
     ...(options.args ?? []),
     "about:blank",

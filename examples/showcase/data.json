@@ -1,6 +1,6 @@
 {
   "meta": {
-    "title": "pdfsmith — tài liệu mẫu",
+    "title": "pdf-service — tài liệu mẫu",
     "eyebrow": "Bun · HTML/CSS → PDF · Templates",
     "lede": "Một tài liệu minh hoạ được render bằng chính thư viện này: bìa, bảng số liệu, biểu đồ CSS thuần, code block và chân trang có số trang.",
     "version": "0.1.0",

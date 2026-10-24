@@ -69,7 +69,7 @@ describe("print pipeline", () => {
   }, 60_000);
 
   test("inlines a local stylesheet", async () => {
-    const dir = `${process.env.TMPDIR ?? "/tmp"}/pdfsmith-test-${Date.now()}`;
+    const dir = `${process.env.TMPDIR ?? "/tmp"}/pdf-service-test-${Date.now()}`;
     await Bun.$`mkdir -p ${dir}`.quiet();
     await Bun.write(`${dir}/style.css`, "body { background: #ff0000; } .marker { color: #00ff00; }");
     await Bun.write(

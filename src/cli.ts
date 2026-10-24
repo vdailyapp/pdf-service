@@ -1,10 +1,10 @@
 #!/usr/bin/env bun
 /**
- * pdfsmith CLI
+ * pdf-service CLI
  *
- *   pdfsmith render invoice.html -o invoice.pdf --format A4
- *   pdfsmith fill templates/invoice -d data.json -o out/invoice.pdf
- *   pdfsmith doctor
+ *   pdf-service render invoice.html -o invoice.pdf --format A4
+ *   pdf-service fill templates/invoice -d data.json -o out/invoice.pdf
+ *   pdf-service doctor
  */
 
 import { parseArgs } from "node:util";
@@ -14,12 +14,12 @@ import { documentHelpers } from "./template/helpers.ts";
 import { findBrowser, launchBrowser } from "./browser/launcher.ts";
 import { VERSION } from "./index.ts";
 
-const HELP = `pdfsmith ${VERSION} — Bun-native HTML/CSS → PDF
+const HELP = `pdf-service ${VERSION} — Bun-native HTML/CSS → PDF
 
 USAGE
-  pdfsmith render <file.html|-> [options]     Render HTML to PDF
-  pdfsmith fill <template dir|file> [options]  Fill a template with data, then print
-  pdfsmith doctor                              Check the browser toolchain
+  pdf-service render <file.html|-> [options]     Render HTML to PDF
+  pdf-service fill <template dir|file> [options]  Fill a template with data, then print
+  pdf-service doctor                              Check the browser toolchain
 
 OPTIONS
   -d, --data <file.json>      JSON data for template filling ("-" reads stdin)
@@ -44,7 +44,7 @@ OPTIONS
 `;
 
 function fail(message: string): never {
-  console.error(`pdfsmith: ${message}`);
+  console.error(`pdf-service: ${message}`);
   process.exit(1);
 }
 
@@ -187,7 +187,7 @@ async function doctorCommand(): Promise<void> {
   const found = await findBrowser();
   if (!found) {
     console.error("✖ No Chrome/Chromium found.");
-    console.error("  macOS: install Google Chrome, or set PDFSMITH_CHROME_PATH.");
+    console.error("  macOS: install Google Chrome, or set CHROME_PATH.");
     console.error("  CI:    bunx playwright install chromium");
     process.exit(1);
   }

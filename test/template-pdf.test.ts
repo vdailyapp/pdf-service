@@ -10,7 +10,7 @@ import { PdfTemplate, loadTemplate } from "../src/template/document.ts";
 import { render } from "../src/template/engine.ts";
 
 async function tempDir(): Promise<string> {
-  return mkdtemp(join(tmpdir(), "pdfsmith-"));
+  return mkdtemp(join(tmpdir(), "pdf-service-"));
 }
 
 describe("PdfTemplate: inline source", () => {

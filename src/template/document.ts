@@ -155,7 +155,7 @@ function absolute(path: string): string {
 }
 
 function injectCss(html: string, css: string): string {
-  const block = `<style data-pdfsmith-tokens>${css}</style>`;
+  const block = `<style data-pdf-service-tokens>${css}</style>`;
   if (/<\/head>/i.test(html)) return html.replace(/<\/head>/i, `${block}</head>`);
   if (/<html([^>]*)>/i.test(html)) return html.replace(/<html([^>]*)>/i, `<html$1><head>${block}</head>`);
   return block + html;

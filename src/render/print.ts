@@ -76,6 +76,14 @@ export type PDFOptions = {
   timeoutMs?: number;
   /** Inline local assets (css/img/fonts) before printing. Default true. */
   inlineAssets?: boolean | InlineOptions;
+  /**
+   * Restrict what the page may load: `data:` URLs always pass, plus these origins
+   * (e.g. "https://fonts.gstatic.com"); everything else, `file://` included, is blocked.
+   * Unset = no restriction. Set it (even to `[]`) for untrusted HTML.
+   */
+  allowedOrigins?: string[];
+  /** Run page scripts. Default true; turn off for untrusted HTML. */
+  javascript?: boolean;
   /** Keep the generated HTML (useful for debugging). */
   keepHtml?: boolean;
 };
@@ -168,7 +176,7 @@ function watermarkCss(watermark: NonNullable<PDFOptions["watermark"]>): string {
 
   return `
 @media print {
-  html { --pdfsmith-wm-color: ${color}; }
+  html { --pdf-service-wm-color: ${color}; }
   body::after {
     content: "${label.replace(/"/g, '\\"')}";
     position: fixed;
@@ -178,7 +186,7 @@ function watermarkCss(watermark: NonNullable<PDFOptions["watermark"]>): string {
     font: 700 ${fontSize}/1 "Helvetica Neue", Arial, sans-serif;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: var(--pdfsmith-wm-color);
+    color: var(--pdf-service-wm-color);
     opacity: ${opacity};
     transform: rotate(${angle}deg);
     pointer-events: none;
@@ -216,6 +224,7 @@ export async function renderHtmlToPdf(html: string, options: RenderOptions = {})
   let browser = options.browser;
   let sessionId: string | null = null;
   let targetId: string | null = null;
+  let stopGuard: (() => void) | undefined;
 
   try {
     if (!browser) {
@@ -230,6 +239,13 @@ export async function renderHtmlToPdf(html: string, options: RenderOptions = {})
 
     const connection = browser.connection;
 
+    let allowed: Set<string> | undefined;
+    if (options.allowedOrigins) {
+      const guard = await guardRequests(connection, sessionId, options.allowedOrigins);
+      allowed = guard.documents;
+      stopGuard = guard.stop;
+    }
+
     const prepared = options.inlineAssets === false
       ? html
       : await inlineAssets(
@@ -239,10 +255,11 @@ export async function renderHtmlToPdf(html: string, options: RenderOptions = {})
             : { baseDir: process.cwd() },
         ).catch(() => html);
 
-    const document = composeDocument(prepared, options);
+    const composed = composeDocument(prepared, options);
+    const document = options.javascript === false ? blockScripts(composed) : composed;
     const loadStart = Date.now();
 
-    await navigate(connection, sessionId, document, timeoutMs);
+    await navigate(connection, sessionId, document, timeoutMs, allowed);
 
     if (options.mediaType) {
       await connection
@@ -275,6 +292,7 @@ export async function renderHtmlToPdf(html: string, options: RenderOptions = {})
     if (error instanceof RenderError) throw error;
     throw new RenderError(error instanceof Error ? error.message : String(error), "browser");
   } finally {
+    stopGuard?.();
     if (browser && sessionId) {
       await browser.connection
         .send("Target.closeTarget", { targetId: targetId ?? sessionId })
@@ -282,6 +300,18 @@ export async function renderHtmlToPdf(html: string, options: RenderOptions = {})
     }
     if (browser && ownsBrowser) await browser.close();
   }
+}
+
+/**
+ * Disable page scripts with a CSP placed before any markup the caller controls.
+ * (`Emulation.setScriptExecutionDisabled` would also stall our own Runtime.evaluate
+ * probes; CSP does not apply to DevTools.) Right after the doctype, the meta opens
+ * <head> itself, so a <script> ahead of the caller's <head> is still covered, and
+ * the document stays in standards mode.
+ */
+function blockScripts(html: string): string {
+  const csp = `<meta http-equiv="Content-Security-Policy" content="script-src 'none'">`;
+  return html.replace(/^(\s*(?:<!--[\s\S]*?-->\s*)*(?:<!doctype[^>]*>)?)/i, `$1${csp}`);
 }
 
 function composeDocument(html: string, options: PDFOptions): string {
@@ -298,9 +328,9 @@ function composeDocument(html: string, options: PDFOptions): string {
       output = output.replace(/<head([^>]*)>/i, `<head$1>${title}`);
     }
     if (/<\/head>/i.test(output)) {
-      return output.replace(/<\/head>/i, `<style data-pdfsmith>${css}</style></head>`);
+      return output.replace(/<\/head>/i, `<style data-pdf-service>${css}</style></head>`);
     }
-    return output.replace(/<html([^>]*)>/i, `<html$1><head><style data-pdfsmith>${css}</style></head>`);
+    return output.replace(/<html([^>]*)>/i, `<html$1><head><style data-pdf-service>${css}</style></head>`);
   }
 
   return [
@@ -308,7 +338,7 @@ function composeDocument(html: string, options: PDFOptions): string {
     '<html lang="en"><head><meta charset="utf-8">',
     '<meta name="viewport" content="width=device-width, initial-scale=1">',
     title,
-    `<style data-pdfsmith>${css}</style>`,
+    `<style data-pdf-service>${css}</style>`,
     "</head><body>",
     html,
     "</body></html>",
@@ -320,6 +350,7 @@ async function navigate(
   sessionId: string,
   html: string,
   timeoutMs: number,
+  allowed?: Set<string>,
 ): Promise<void> {
   const base64 = Buffer.from(html, "utf8").toString("base64");
   // data: URLs keep the document same-origin-ish and avoid a temp file, but
@@ -334,8 +365,10 @@ async function navigate(
     return;
   }
 
-  const path = `${process.env.TMPDIR ?? "/tmp"}/pdfsmith-${Date.now()}-${Math.random().toString(36).slice(2)}.html`;
+  const path = `${process.env.TMPDIR ?? "/tmp"}/pdf-service-${Date.now()}-${Math.random().toString(36).slice(2)}.html`;
   await Bun.write(path, html);
+  // Under a request guard only this exact file may load, not its neighbours in TMPDIR.
+  allowed?.add(`file://${path}`);
   try {
     const loaded = connection.once("Page.loadEventFired", sessionId, timeoutMs);
     await connection.send("Page.navigate", { url: `file://${path}` }, sessionId);
@@ -344,6 +377,38 @@ async function navigate(
     // The page has parsed the file by now; leaving it would leak temp files.
     setTimeout(() => void Bun.$`rm -f ${path}`.quiet().catch(() => {}), 5_000);
   }
+}
+
+/**
+ * Pause every request of the page and let through only `data:`, the documents we
+ * navigate to, and `origins`. Returns the document allow-list and an unsubscribe.
+ */
+async function guardRequests(
+  connection: CdpConnection,
+  sessionId: string,
+  origins: string[],
+): Promise<{ documents: Set<string>; stop: () => void }> {
+  const documents = new Set<string>();
+  const allowedOrigins = new Set(origins.map((origin) => new URL(origin).origin));
+  const stop = connection.on("Fetch.requestPaused", (event) => {
+    if (event.sessionId !== sessionId) return;
+    const { requestId, request } = event.params as { requestId: string; request: { url: string } };
+    const url = request.url;
+    let pass = url.startsWith("data:") || documents.has(url);
+    if (!pass && /^https?:/i.test(url)) {
+      try {
+        pass = allowedOrigins.has(new URL(url).origin);
+      } catch {
+        pass = false;
+      }
+    }
+    const reply = pass
+      ? connection.send("Fetch.continueRequest", { requestId }, sessionId)
+      : connection.send("Fetch.failRequest", { requestId, errorReason: "BlockedByClient" }, sessionId);
+    reply.catch(() => {});
+  });
+  await connection.send("Fetch.enable", { patterns: [{ urlPattern: "*" }] }, sessionId);
+  return { documents, stop };
 }
 
 async function settle(

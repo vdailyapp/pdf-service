@@ -122,11 +122,11 @@ try {
     {
       browser,
       format: "A4",
-      title: "pdfsmith — tài liệu mẫu",
+      title: "pdf-service — tài liệu mẫu",
       outline: true,
       header: `
         <div style="width:100%;padding:0 16mm;font:7pt 'Helvetica Neue',Arial;color:#94a3b8;display:flex;justify-content:space-between;align-items:center">
-          <span style="letter-spacing:0.12em;text-transform:uppercase">pdfsmith · tài liệu mẫu</span>
+          <span style="letter-spacing:0.12em;text-transform:uppercase">pdf-service · tài liệu mẫu</span>
           <span>v${data.meta.version}</span>
         </div>`,
       footer: `
@@ -138,7 +138,7 @@ try {
     },
   );
 
-  const path = `${outDir}/pdfsmith-showcase.pdf`;
+  const path = `${outDir}/pdf-service-showcase.pdf`;
   await Bun.write(path, result.bytes);
 
   const kb = (result.bytes.byteLength / 1024).toFixed(1);
